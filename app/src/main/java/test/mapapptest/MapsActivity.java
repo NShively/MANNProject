@@ -1,5 +1,7 @@
 package test.mapapptest;
 
+//AIzaSyAwktSCcHJxPe34JS4rZYMAqZ1_YSn6cC
+// directions
 
 
 import android.app.Dialog;
@@ -212,13 +214,13 @@ public class MapsActivity extends FragmentActivity implements
             // Get best last location measurement meeting criteria
             mBestReading = bestLastKnownLocation(MIN_LAST_READ_ACCURACY, FIVE_MIN);
             //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-            mMap.addMarker(new MarkerOptions().position(new LatLng(mBestReading.getLatitude(), mBestReading.getLongitude())));
+            //mMap.addMarker(new MarkerOptions().position(new LatLng(mBestReading.getLatitude(), mBestReading.getLongitude())));
             if (null == mBestReading
                     || mBestReading.getAccuracy() > MIN_LAST_READ_ACCURACY
                     || mBestReading.getTime() < System.currentTimeMillis() - TWO_MIN) {
 
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
+                //mMap.addMarker(new MarkerOptions().position(new LatLng(mBestReading.getLatitude(), mBestReading.getLongitude())));
                 // Schedule a runnable to unregister location listeners
                 Executors.newScheduledThreadPool(1).schedule(new Runnable() {
 
@@ -246,6 +248,7 @@ public class MapsActivity extends FragmentActivity implements
         if (null == mBestReading || location.getAccuracy() < mBestReading.getAccuracy()) {
             mBestReading = location;
 
+
             if (mBestReading.getAccuracy() < MIN_ACCURACY) {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             }
@@ -264,6 +267,7 @@ public class MapsActivity extends FragmentActivity implements
         if (mCurrentLocation != null) {
             float accuracy = mCurrentLocation.getAccuracy();
             long time = mCurrentLocation.getTime();
+            mMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
 
             if (accuracy < bestAccuracy) {
                 bestResult = mCurrentLocation;
