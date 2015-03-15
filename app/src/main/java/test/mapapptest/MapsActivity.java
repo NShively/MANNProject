@@ -7,12 +7,15 @@ package test.mapapptest;
 import android.app.Dialog;
 import android.content.IntentSender;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-
+import java.lang.String;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -24,14 +27,47 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 public class MapsActivity extends FragmentActivity implements
         LocationListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener {
     //implements com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
     //GoogleApiClient.OnConnectionFailedListener
     private static final long ONE_MIN = 1000 * 60;
@@ -52,6 +88,8 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
@@ -66,6 +104,12 @@ public class MapsActivity extends FragmentActivity implements
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+
+        /**************************************************************
+         *
+         */
+
 
     }
 /*
@@ -111,16 +155,16 @@ public class MapsActivity extends FragmentActivity implements
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-       // Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        // Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         //Location here = mMap.getMyLocation();
-       // LatLng userLocation = new LatLng(here.getLatitude(),here.getLongitude());
+        // LatLng userLocation = new LatLng(here.getLatitude(),here.getLongitude());
         //LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-      //  Criteria criteria = new Criteria();
-     //   String provider = service.getBestProvider(criteria, false);
-      //  Location location = service.getLastKnownLocation(provider);
-         //Both are returned as NULL. Hmm.
-      //  LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
+        //  Criteria criteria = new Criteria();
+        //   String provider = service.getBestProvider(criteria, false);
+        //  Location location = service.getLastKnownLocation(provider);
+        //Both are returned as NULL. Hmm.
+        //  LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
 
         //mMap.addMarker(new MarkerOptions().position(userLocation).title("I'm here!"));
     }
@@ -136,8 +180,10 @@ public class MapsActivity extends FragmentActivity implements
 
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
-        }setUpMapIfNeeded();
+        }
+        setUpMapIfNeeded();
     }
+
     @Override
     protected void onPause() {
         // TODO Auto-generated method stub
@@ -171,8 +217,7 @@ public class MapsActivity extends FragmentActivity implements
 
         if (ConnectionResult.SUCCESS == resultCode) {
             return true;
-        }
-        else {
+        } else {
             GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0).show();
             return false;
         }
@@ -268,7 +313,9 @@ public class MapsActivity extends FragmentActivity implements
             float accuracy = mCurrentLocation.getAccuracy();
             long time = mCurrentLocation.getTime();
             mMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
-
+            String DistInfo = getDistanceOnRoad(65.9847, -18.5398, 65.94626187, -18.55788231);
+            String DistInf = String.valueOf(DistInfo);
+            mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title(DistInf));
             if (accuracy < bestAccuracy) {
                 bestResult = mCurrentLocation;
                 bestAccuracy = accuracy;
@@ -279,8 +326,7 @@ public class MapsActivity extends FragmentActivity implements
         // Return best reading or null
         if (bestAccuracy > minAccuracy || bestTime < minTime) {
             return null;
-        }
-        else {
+        } else {
             return bestResult;
         }
     }
@@ -302,5 +348,105 @@ public class MapsActivity extends FragmentActivity implements
         }
     }
 
+    //DEPECRECATED, USE getDistanceOnRoad(lat1,long1,lat2,long2)
+    private double getDistanceInfo(double lat1, double lng1, double lat2, double lng2) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Double dist = 0.0;
 
+        try {
+
+            //destinationAddress = destinationAddress.replaceAll(" ","%20");
+            String url = "http://maps.googleapis.com/maps/api/directions/json?origin=" + lat1 + "," + lng1 + "&destination=" + lat2 + "," + lng2; //+ "&mode=driving&key=AIzaSyAwktSCcHJxPe34JS4rZYMAqZ1_YSn6cCE";
+            //String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + lat1 + "," + lng1 + "&destination=" + lat2+","+ lng2 + "&key=AIzaSyAwktSCcHJxPe34JS4rZYMAqZ1_YSn6cCE";
+            HttpPost httppost = new HttpPost(url);
+
+            HttpClient client = new DefaultHttpClient();
+            HttpResponse response;
+            stringBuilder = new StringBuilder();
+
+
+            response = client.execute(httppost);
+            HttpEntity entity = response.getEntity();
+            InputStream stream = entity.getContent();
+            int b;
+            while ((b = stream.read()) != -1) {
+                stringBuilder.append((char) b);
+            }
+        } catch (ClientProtocolException e) {
+        } catch (IOException e) {
+        }
+        JSONObject jsonObject = new JSONObject();
+        try {
+            // JSONObject jsonLocation = JSONfunctions.getJSONfromURL("http://maps.googleapis.com/maps/api/directions/json?origin=" + currentLongitude + "," +  currentLatitude + "&destination=" + longitude + "," + longitude +"&sensor=true&region=gb");
+
+            jsonObject = new JSONObject(stringBuilder.toString());
+
+            JSONArray array = jsonObject.getJSONArray("routes");
+
+            JSONObject routes = array.getJSONObject(0);
+
+            JSONArray legs = routes.getJSONArray("legs");
+
+            JSONObject steps = legs.getJSONObject(0);
+
+            JSONObject distance = steps.getJSONObject("distance");
+
+            Log.i("Distance", distance.toString());
+            dist = Double.parseDouble(distance.getString("text").replaceAll("[^\\.0123456789]", ""));
+
+
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return dist;
+    }
+
+
+    private String getDistanceOnRoad(double latitude, double longitude,
+                                     double prelatitute, double prelongitude) {
+        /*
+        * returns the distance by road between two lat/longs
+         */
+        String result_in_mi = "";
+        String url = "http://maps.google.com/maps/api/directions/xml?origin="
+                + latitude + "," + longitude + "&destination=" + prelatitute
+                + "," + prelongitude + "&sensor=false&units=imperial";
+        String tag[] = {"text"};
+        HttpResponse response = null;
+        try {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpContext localContext = new BasicHttpContext();
+            HttpPost httpPost = new HttpPost(url);
+            response = httpClient.execute(httpPost, localContext);
+            InputStream is = response.getEntity().getContent();
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder();
+            Document doc = builder.parse(is);
+            if (doc != null) {
+                NodeList nl;
+                ArrayList args = new ArrayList();
+                for (String s : tag) {
+                    nl = doc.getElementsByTagName(s);
+                    if (nl.getLength() > 0) {
+                        Node node = nl.item(nl.getLength() - 1);
+                        args.add(node.getTextContent());
+                    } else {
+                        args.add(" - ");
+                    }
+                }
+                result_in_mi = String.format("%s", args.get(0));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result_in_mi;
+    }
+
+    double StringToDouble(String str){
+        double result = 0;
+        result = Double.parseDouble(str);
+        return result;
+    }
 }
