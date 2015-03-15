@@ -78,7 +78,7 @@ public class MapsActivity extends FragmentActivity implements
     private static final float MIN_ACCURACY = 25.0f;
     private static final float MIN_LAST_READ_ACCURACY = 500.0f;
     private final static int REQUEST_RESOLVE_ERROR = 1001;
-
+//comment
     private LocationRequest mLocationRequest;
     private Location mBestReading;
     private GoogleApiClient mGoogleApiClient;
