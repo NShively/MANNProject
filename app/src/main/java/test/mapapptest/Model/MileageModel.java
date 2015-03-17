@@ -17,6 +17,9 @@ public class MileageModel
     private Uri mileageUri;
     private int mileage;
 
+// Need to make a data input for vehicleInfo that holds make/model/year/options
+
+
     public Uri getMileageUri()
     {
         return mileageUri;

@@ -43,7 +43,7 @@ public class MileageDataManager extends AsyncTask<MileageSearchRequestArgs, Stri
         protected void onPostExecute(MileageModel mileageModel){
         super.onPostExecute(mileageModel);
 
-        callback.onMileageCallback(mileageModel);
+     //   callback.onMileageCallback(mileageModel);
         }
 
 }
