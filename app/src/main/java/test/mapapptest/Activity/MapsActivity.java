@@ -70,8 +70,7 @@ import test.mapapptest.R;
 public class MapsActivity extends FragmentActivity implements
         LocationListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-    //implements com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
-    //GoogleApiClient.OnConnectionFailedListener
+
     private static final long ONE_MIN = 1000 * 60;
     private static final long TWO_MIN = ONE_MIN * 2;
     private static final long FIVE_MIN = ONE_MIN * 5;
@@ -157,18 +156,7 @@ public class MapsActivity extends FragmentActivity implements
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-        // Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        //Location here = mMap.getMyLocation();
-        // LatLng userLocation = new LatLng(here.getLatitude(),here.getLongitude());
-        //LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-        //  Criteria criteria = new Criteria();
-        //   String provider = service.getBestProvider(criteria, false);
-        //  Location location = service.getLastKnownLocation(provider);
-        //Both are returned as NULL. Hmm.
-        //  LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
 
-        //mMap.addMarker(new MarkerOptions().position(userLocation).title("I'm here!"));
     }
 
     //------------//------------//---------//----
@@ -260,14 +248,12 @@ public class MapsActivity extends FragmentActivity implements
         if (servicesAvailable()) {
             // Get best last location measurement meeting criteria
             mBestReading = bestLastKnownLocation(MIN_LAST_READ_ACCURACY, FIVE_MIN);
-            //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-            //mMap.addMarker(new MarkerOptions().position(new LatLng(mBestReading.getLatitude(), mBestReading.getLongitude())));
             if (null == mBestReading
                     || mBestReading.getAccuracy() > MIN_LAST_READ_ACCURACY
                     || mBestReading.getTime() < System.currentTimeMillis() - TWO_MIN) {
 
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-                //mMap.addMarker(new MarkerOptions().position(new LatLng(mBestReading.getLatitude(), mBestReading.getLongitude())));
+
                 // Schedule a runnable to unregister location listeners
                 Executors.newScheduledThreadPool(1).schedule(new Runnable() {
 
@@ -314,10 +300,14 @@ public class MapsActivity extends FragmentActivity implements
         if (mCurrentLocation != null) {
             float accuracy = mCurrentLocation.getAccuracy();
             long time = mCurrentLocation.getTime();
-            mMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
-            String DistInfo = getDistanceOnRoad(65.9847, -18.5398, 65.94626187, -18.55788231);
+            mMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())).title("I AM HERE"));
+            String DistInfo = getDistanceOnRoad(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), 65.94626187, -18.55788231);
             String DistInf = String.valueOf(DistInfo);
-            mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title(DistInf));
+            double test = 0;
+            test = StringToDouble(DistInfo);
+            String x = Double.toString(test);
+            mMap.addMarker(new MarkerOptions().position(new LatLng(65.94626187, -18.55788231)).title("Distance: " + x));
+            //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title(DistInf));
             if (accuracy < bestAccuracy) {
                 bestResult = mCurrentLocation;
                 bestAccuracy = accuracy;
@@ -446,9 +436,23 @@ public class MapsActivity extends FragmentActivity implements
         return result_in_mi;
     }
 
-    double StringToDouble(String str) {
+    /* Parses a string and returns the number in it, returned as a double! */
+    double StringToDouble(String s1) {
+        String ParsedString = "";
+        int DotCount = 0;
+        char[] str = s1.toCharArray();
+
+        for (int i = 0; i < str.length;i++) {
+            if (str[i] == '0' || str[i] == '1' || str[i] == '2' || str[i] == '3' || str[i] == '4' || str[i] == '5' || str[i] == '6' || str[i] == '7' || str[i] == '8' || str[i] == '9') {
+                ParsedString += str[i];
+            } else if (str[i] == '.' && DotCount == 0) {
+                ParsedString += '.';
+                DotCount = DotCount + 1;
+            }
+        }
+
         double result = 0;
-        result = Double.parseDouble(str);
+        result = Double.parseDouble(ParsedString);
         return result;
     }
 }
