@@ -446,9 +446,23 @@ public class MapsActivity extends FragmentActivity implements
         return result_in_mi;
     }
 
-    double StringToDouble(String str) {
-        double result = 0;
-        result = Double.parseDouble(str);
-        return result;
+    double StringToDouble(String s1) {
+            /* Parses a string and returns the number in it, returned as a double! */
+                    String ParsedString = "";
+                    int DotCount = 0;
+                    char[] str = s1.toCharArray();
+
+                    for (int i = 0; i < str.length;i++) {
+                            if (str[i] == '0' || str[i] == '1' || str[i] == '2' || str[i] == '3' || str[i] == '4' || str[i] == '5' || str[i] == '6' || str[i] == '7' || str[i] == '8' || str[i] == '9') {
+                                    ParsedString += str[i];
+                               } else if (str[i] == '.' && DotCount == 0) {
+                                    ParsedString += '.';
+                                    DotCount = DotCount + 1;
+                               }
+                    }
+            double result = 0;
+            result = Double.parseDouble(ParsedString);
+            return result;
     }
 }
+
